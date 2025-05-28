@@ -32,6 +32,16 @@ h2 {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+#event-list {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+}
+
+#event-list li {
+    margin-bottom: 0.5rem;
+}
+
+
 /* 시간표 */
 #timetable {
     width: 100%;
@@ -61,17 +71,18 @@ h2 {
 #timetable th {
     background-color: #f2f2f2;
     font-weight: bold;
-     border: 1px solid #888;
+     border: 1px solid #888; 
     padding: 0.5rem;
     cursor: pointer;
 }
 
 #timetable td:first-child {
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5 !important;  
     font-weight: bold;
     color: #333;
     cursor: default;
 }
+
 
 /* 월급 계산기 */
 form {
@@ -100,4 +111,8 @@ form button:hover {
 #salary-result {
     margin-top: 1rem;
     font-weight: bold;
+}
+
+#hourly-wage {
+    margin-top: 10px;
 }
