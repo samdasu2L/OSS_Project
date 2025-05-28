@@ -44,6 +44,7 @@ h2 {
 #timetable td {
     border: 1px solid #ccc;
     padding: 0.5rem;
+    cursor: pointer;
 }
 
 #timetable th {

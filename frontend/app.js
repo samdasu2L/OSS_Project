@@ -34,3 +34,27 @@ document.getElementById('salary-form').addEventListener('submit', function (e) {
         document.getElementById('salary-result').textContent = '유효한 값을 입력해주세요.';
     }
 });
+
+// 시간표 클릭 시 과목 입력, 수정, 삭제
+document.querySelectorAll('#timetable td').forEach(cell => {
+    cell.addEventListener('click', function () {
+        const current = cell.textContent.trim();
+
+        if (current === '') {
+            const subject = prompt('과목명을 입력하세요:');
+            if (subject !== null && subject.trim() !== '') {
+                cell.textContent = subject;
+            }
+        } else {
+            const action = prompt(`현재 과목: "${current}"\n수정하려면 새 과목명을 입력하고,\n삭제하려면 "삭제"라고 입력하세요:`);
+
+            if (action === null) return;
+
+            if (action.trim() === '삭제') {
+                cell.textContent = '';
+            } else if (action.trim() !== '') {
+                cell.textContent = action.trim();
+            }
+        }
+    });
+});
