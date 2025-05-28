@@ -58,3 +58,34 @@ document.querySelectorAll('#timetable td').forEach(cell => {
         }
     });
 });
+
+// 시간표 저장 + 새로고침해도 불러오기 코드
+const STORAGE_KEY = 'timetableData';
+document.querySelectorAll('#timetable td').forEach((cell, index) => {
+  cell.setAttribute('data-cell-id', index);
+});
+
+function saveTimetable() {
+  const data = {};
+  document.querySelectorAll('#timetable td').forEach(cell => {
+    const id = cell.getAttribute('data-cell-id');
+    const value = cell.textContent.trim();
+    data[id] = value;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadTimetable() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    document.querySelectorAll('#timetable td').forEach(cell => {
+      const id = cell.getAttribute('data-cell-id');
+      if (data[id]) {
+        cell.textContent = data[id];
+      }
+    });
+  }
+}
+
+loadTimetable();
