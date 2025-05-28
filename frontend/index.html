@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캘린더 프로그램</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- FullCalendar CSS (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <h1>나만의 캘린더</h1>
+    </header>
+
+    <main>
+        <section id="calendar">
+            <h2>일정 관리</h2>
+            <div id="calendar-container"></div>
+        </section>
+
+        <section id="timetable">
+            <h2>시간표</h2>
+            <div id="timetable-container"></div>
+        </section>
+
+        <section id="salary">
+            <h2>알바 월급 계산기</h2>
+            <form id="salary-form">
+                <label for="hourly-rate">시급: </label>
+                <input type="number" id="hourly-rate" required><br>
+                <label for="hours-worked">근무 시간: </label>
+                <input type="number" id="hours-worked" required><br>
+                <button type="submit">계산하기</button>
+            </form>
+            <p id="salary-result"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 캘린더 프로그램</p>
+    </footer>
+
+    <!-- FullCalendar JS (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
