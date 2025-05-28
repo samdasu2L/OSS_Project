@@ -19,3 +19,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 });
+
+//알바 월급 계산
+document.getElementById('salary-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const hourlyRate = parseFloat(document.getElementById('hourly-rate').value);
+    const hoursWorked = parseFloat(document.getElementById('hours-worked').value);
+
+    if (!isNaN(hourlyRate) && !isNaN(hoursWorked)) {
+        const total = hourlyRate * hoursWorked;
+        document.getElementById('salary-result').textContent = `예상 월급: ${total.toLocaleString()}원`;
+    } else {
+        document.getElementById('salary-result').textContent = '유효한 값을 입력해주세요.';
+    }
+});
