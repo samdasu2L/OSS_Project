@@ -23,7 +23,8 @@ footer {
   display: flex;
   justify-content: center;
   margin: 0 auto 1rem;
-  max-width: 1100px;
+  max-width: 1300px;  
+  height: 80px;
 }
 
 /* 계산기 */
@@ -50,10 +51,44 @@ footer {
   line-height: 1.4;
 }
 
-/* 버튼 */
-.toggle-list-container {
-  max-width: 20rem;
+.content-area {
+  display: flex;
+  gap: 1rem;
+  max-width: 1300px;  
+  margin: 0 auto;
+  align-items: stretch;
 }
+
+/* 캘린더 */
+#calendar-container {
+  flex: 1;
+  background: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+  height: 580px;
+  overflow: hidden;
+}
+
+.right-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 30rem; 
+}
+
+.lists-container {
+  display: flex;
+  flex-direction: row; 
+  gap: 1rem;
+  width: 100%;
+}
+
+.toggle-list-container {
+  flex: 1;
+  position: relative;  
+}
+
 .btn-toggle {
   width: 100%;
   padding: 0.5rem;
@@ -67,17 +102,23 @@ footer {
 .btn-toggle:hover {
   background-color: #45a049;
 }
+
 .event-list-container {
-  display: none;
+  position: absolute;           
+  top: calc(100% + 0.5rem);     
+  left: 0;
+  width: 100%;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 0.5rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.05);
-  margin-top: 0.5rem;
+  margin-top: 0;              
   padding: 1rem;
   max-height: 12.5rem;
   overflow-y: auto;
   list-style: none;
+  display: none;             
+  z-index: 10;                 
 }
 .event-list-container.is-open {
   display: block;
@@ -94,112 +135,40 @@ footer {
   font-size: 1rem;
 }
 
-/* 캘린더 */
-#calendar-container {
-  max-width: 900px;
-  margin: 0 auto;
-  background: #fff;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
-}
-
-.content-area {
-  display: flex;
-  gap: 1rem;
-  max-width: 1100px;
-  margin: 0 auto;
-  align-items: stretch; 
-}
-
-.right-side {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 20rem;
-  height: 100%; 
-}
-
-#calendar-container {
-  flex: 1;
-  background: #fff;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
-  height: 700px; 
-  overflow: hidden;
-}
-.lists-container {
-  display: flex;
-  flex-direction: column;
-  width: 20rem;
-  gap: 1rem;
-}
-
-.event-list-container li span { 
-  white-space: nowrap; 
-}
-
-
+/* 시간표 */
 #timetable-container {
-  height: 700px; 
+  height: 500px;
   overflow-y: auto;
 }
-
-
-/* 시간표  */
 #timetable {
-    width: 100%; /*시간표 가로 넓이*/
-    border-collapse: collapse;
-    text-align: center;
-    margin-top: 1rem;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  margin-top: 1rem;
 }
-
 #timetable th,
 #timetable td {
-    width: 120px;
-    height: 60px;
-    max-width: 120px;
-    max-height: 60px;
-    word-break: break-word;
-    white-space: normal;
-    vertical-align: middle;
-    text-align: center;
-    line-height: 1.2;
-    padding: 4px;
-    cursor: pointer;
-    border: 1px solid #888; 
-    padding: 0.5rem;
-    cursor: pointer;
-}
-
-#timetable th,
-#timetable td {
+  width: 120px;
   height: 40px;
+  max-width: 120px;
   max-height: 40px;
-  padding: 4px;
+  word-break: break-word;
+  white-space: normal;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0.5rem;
+  border: 1px solid #888;
+  cursor: pointer;
 }
-
-
 #timetable th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-     border: 1px solid #888; 
-    padding: 0.5rem;
-    cursor: pointer;
+  background-color: #f2f2f2;
+  font-weight: bold;
 }
-
 #timetable td:first-child {
-    width: 80px;
-    background-color: #f5f5f5;
-    background-color: #f5f5f5 !important;  
-    font-weight: bold;
-    color: #555;
-    color: #333;
-    cursor: default;
-}
-
-#timetable-container {
-  max-width: 700px;   
-  margin: 0 auto;     
+  width: 80px;
+  background-color: #f5f5f5 !important;
+  font-weight: bold;
+  color: #333;
+  cursor: default;
 }
