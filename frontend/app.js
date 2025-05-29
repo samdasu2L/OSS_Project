@@ -1,17 +1,16 @@
 let calendar;
-let selectedShift = null;
 
 const SHIFTS_KEY = 'shifts';
 const EVENTS_KEY = 'events';
 
-// 근무 일정 저장
+// 근무 일정 저장 
 async function saveShiftToStorage(start, end) {
   const existing = (await localforage.getItem(SHIFTS_KEY)) || [];
   existing.push({ start: start.toISOString(), end: end.toISOString() });
   await localforage.setItem(SHIFTS_KEY, existing);
 }
 
-// 일반 일정 저장 
+// 일반 일정 저장
 async function saveEventToStorage(title, start, end) {
   const existing = (await localforage.getItem(EVENTS_KEY)) || [];
   existing.push({ title, start: start.toISOString(), end: end.toISOString() });
@@ -22,16 +21,29 @@ async function saveEventToStorage(title, start, end) {
 async function updateSalary() {
   const wage = parseInt(document.getElementById('hourly-wage').value) || 0;
   const data = (await localforage.getItem(SHIFTS_KEY)) || [];
+
+  const currentDate = calendar.getDate();
+  const viewYear = currentDate.getFullYear();
+  const viewMonth = currentDate.getMonth(); 
+
+  // 월별 근무 계산
+  const monthlyShifts = data.filter(shift => {
+    const d = new Date(shift.start);
+    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+  });
+
   let totalMinutes = 0;
-  data.forEach(shift => {
+  monthlyShifts.forEach(shift => {
     const start = new Date(shift.start);
     const end = new Date(shift.end);
     totalMinutes += (end - start) / (1000 * 60);
   });
+
   const hours = Math.floor(totalMinutes / 60);
-  const minutes = Math.round(totalMinutes % 60);
+  const mins = Math.round(totalMinutes % 60);
   const salary = Math.floor((totalMinutes / 60) * wage);
-  document.getElementById('total-time').textContent = `${hours}시간 ${minutes}분`;
+
+  document.getElementById('total-time').textContent = `${hours}시간 ${mins}분`;
   document.getElementById('total-salary').textContent = `${salary.toLocaleString()}원`;
 }
 
@@ -80,33 +92,25 @@ document.addEventListener('DOMContentLoaded', function () {
     nowIndicator: true,
     editable: true,
     selectable: true,
+    datesSet: updateSalary, 
     select: async function (info) {
-      selectedShift = info;
-      // 일정 유형 선택 (근무, 일반)
-      const type = prompt("이벤트 유형을 선택하세요. 1: 근무, 2: 일반 일정");
+      const type = prompt('이벤트 유형 선택: 1) 근무 2) 일반');
       if (type !== '1' && type !== '2') return;
       const { start, end } = info;
       let title = '';
-      let backgroundColor = '';
+      let bg = '';
       if (type === '1') {
         title = '근무';
-        backgroundColor = '#4CAF50';
+        bg = '#4CAF50';
         await saveShiftToStorage(start, end);
-        updateSalary();
       } else {
-        title = prompt('일정 이름을 입력하세요:');
+        title = prompt('일정 이름 입력:');
         if (!title) return;
-        backgroundColor = '#3788d8';
+        bg = '#3788d8';
         await saveEventToStorage(title, start, end);
       }
-      calendar.addEvent({
-        title,
-        start,
-        end,
-        backgroundColor,
-        borderColor: backgroundColor
-      });
-      selectedShift = null;
+      calendar.addEvent({ title, start, end, backgroundColor: bg, borderColor: bg });
+      updateSalary();
     }
   });
   calendar.render();
@@ -115,14 +119,14 @@ document.addEventListener('DOMContentLoaded', function () {
   loadEvents();
   updateSalary();
 
-  // 시급 입력 시 월급 계산
+  // 시급 입력
   wageInput.addEventListener('input', updateSalary);
 
   // 일정 목록 보기
-  showEventsBtn.addEventListener('click', async function () {
+  showEventsBtn.addEventListener('click', async () => {
     eventListEl.innerHTML = '';
     const events = calendar.getEvents();
-    if (events.length === 0) {
+    if (!events.length) {
       eventListEl.innerHTML = '<li>등록된 일정이 없습니다.</li>';
       return;
     }
