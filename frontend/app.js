@@ -122,36 +122,43 @@ document.addEventListener('DOMContentLoaded', function () {
   // 시급 입력
   wageInput.addEventListener('input', updateSalary);
 
-  // 일정 목록 보기
-  showEventsBtn.addEventListener('click', async () => {
-    eventListEl.innerHTML = '';
-    const events = calendar.getEvents();
-    if (!events.length) {
-      eventListEl.innerHTML = '<li>등록된 일정이 없습니다.</li>';
-      return;
-    }
-    for (const event of events) {
-      const li = document.createElement('li');
-      li.textContent = `${event.title} (${event.startStr.replace('T', ' ')})`;
-      const btn = document.createElement('button');
-      btn.textContent = '❌';
-      btn.style.marginLeft = '10px';
-      btn.addEventListener('click', async () => {
-        if (event.title === '근무') {
-          const data = (await localforage.getItem(SHIFTS_KEY)) || [];
-          const filtered = data.filter(s => s.start !== event.start.toISOString() || s.end !== event.end.toISOString());
-          await localforage.setItem(SHIFTS_KEY, filtered);
-          updateSalary();
-        } else {
-          const data = (await localforage.getItem(EVENTS_KEY)) || [];
-          const filtered = data.filter(e => e.title !== event.title || e.start !== event.start.toISOString() || e.end !== event.end.toISOString());
-          await localforage.setItem(EVENTS_KEY, filtered);
-        }
-        event.remove();
-        li.remove();
-      });
-      li.appendChild(btn);
-      eventListEl.appendChild(li);
+  // 일정 목록 보기 기능 구현
+  document.getElementById('show-events-button').addEventListener('click', function () {
+    const eventList = document.getElementById('event-list');
+    const displayStyle = window.getComputedStyle(eventList).display;
+     
+    if (displayStyle === 'none') {
+      
+      eventList.style.display = 'block';
+      
+      eventList.innerHTML = '';
+      const events = calendar.getEvents();
+      if (events.length === 0) {
+        eventList.innerHTML = '<li>등록된 일정이 없습니다.</li>';
+      } else {
+        events.forEach(event => {
+          const li = document.createElement('li');
+          li.textContent = `${event.title} (${event.startStr})`;
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = '❌';
+          deleteBtn.style.marginLeft = '10px';
+          deleteBtn.addEventListener('click', function () {
+            
+            event.remove();
+            
+            li.remove();
+            // 근무 일정일 경우 급여 계산
+            if (event.title === '근무') updateSalary();
+          });
+
+          li.appendChild(deleteBtn);
+          eventList.appendChild(li);
+        });
+      }
+    } else {
+      
+      eventList.style.display = 'none';
     }
   });
 });
