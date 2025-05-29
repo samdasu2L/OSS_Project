@@ -26,7 +26,7 @@ async function saveShift(title, start, end) {
   return id;
 }
 
-// 일반 일정 등록
+//일반 일정 등록
 async function saveEvent(title, start, end) {
   const list = (await localforage.getItem(EVENTS_KEY)) || [];
   const id = generateId();
@@ -119,6 +119,7 @@ async function populateEventList() {
     const delBtn = document.createElement('button');
     delBtn.textContent = '❌';
     delBtn.addEventListener('click', async () => {
+      calendar.getEventById(evt.id)?.remove();
       const updated = (await localforage.getItem(EVENTS_KEY)) || [];
       await localforage.setItem(EVENTS_KEY, updated.filter(e => e.id !== evt.id));
       populateEventList();
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupToggle('show-shifts-button', 'shift-list',   populateShiftList);
 
   // 시간표
+
   document.querySelectorAll('#timetable td').forEach((cell, idx) => {
     cell.dataset.cellId = idx;
   });
