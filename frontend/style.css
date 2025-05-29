@@ -21,9 +21,9 @@ footer {
 
 .top-controls {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  max-width: 1100px;
 }
 
 /* 계산기 */
@@ -50,7 +50,7 @@ footer {
   line-height: 1.4;
 }
 
-/* 버튼 */
+/* 버튼*/
 .toggle-list-container {
   max-width: 20rem;
 }
@@ -109,11 +109,11 @@ footer {
   gap: 1rem;
   display: flex;
   gap: 1rem;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto; 
 }
 #calendar-container {
-  flex: 1;
+  flex: 1;  
   background: #fff;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -124,4 +124,8 @@ footer {
   flex-direction: column;
   width: 20rem;
   gap: 1rem;
+}
+
+.event-list-container li span { 
+  white-space: nowrap; 
 }
