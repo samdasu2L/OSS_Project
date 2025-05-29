@@ -176,33 +176,25 @@ document.querySelectorAll('#timetable td').forEach((cell, index) => {
 });
 
 const subjectColorMap = new Map();
-const usedColors = new Set();
 
 function getColorForSubject(subject) {
     if (subjectColorMap.has(subject)) {
         return subjectColorMap.get(subject);
     }
 
-    let availableColors = COLOR_PALETTE.filter(color => !usedColors.has(color));
-    if (availableColors.length === 0) {
-        availableColors = [...COLOR_PALETTE];
+    let assigned = null;
+    for (const color of COLOR_PALETTE) {
+        if (![...subjectColorMap.values()].includes(color)) {
+            assigned = color;
+            break;
+        }
+      }
+
+    if (!assigned) {
+        assigned = COLOR_PALETTE[0];
     }
-
-    const selected = availableColors[Math.floor(Math.random() * availableColors.length)];
-    subjectColorMap.set(subject, selected);
-    usedColors.add(selected);
-
-    return selected;
-}
-
-function saveTimetable() {
-    const data = {};
-    document.querySelectorAll('#timetable td').forEach(cell => {
-        const id = cell.getAttribute('data-cell-id');
-        const value = cell.textContent.trim();
-        data[id] = value;
-    });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    subjectColorMap.set(subject, assigned);
+    return assigned;
 }
 
 function loadTimetable() {
@@ -229,29 +221,31 @@ document.querySelectorAll('#timetable td').forEach(cell => {
 
     cell.addEventListener('click', function () {
         const current = cell.textContent.trim();
-        const id = cell.getAttribute('data-cell-id');
 
         if (current === '') {
             const subject = prompt('과목명을 입력하세요:');
-            if (subject !== null && subject.trim() !== '') {
-                cell.textContent = subject;
-                cell.style.backgroundColor = getColorForSubject(subject);
+             if (subject && subject.trim() !== '') {
+                cell.textContent = subject.trim();
+                cell.style.backgroundColor = getColorForSubject(subject.trim());
                 saveTimetable();
             }
         } else {
-            const action = prompt(`현재 과목: "${current}"\n수정하려면 새 과목명을 입력하고,\n삭제하려면 "삭제"라고 입력하세요:`);
-
-            if (action === null) return;
-
-            if (action.trim() === '삭제') {
-                cell.textContent = '';
-                cell.style.backgroundColor = '';
-                saveTimetable();
-            } else if (action.trim() !== '') {
-                const newSubject = action.trim();
-                cell.textContent = newSubject;
-                cell.style.backgroundColor = getColorForSubject(newSubject);
-                saveTimetable();
+            const isModify = confirm('과목을 수정하시겠습니까?\n[확인]=수정  [취소]=삭제');
+            if (isModify) {
+                
+                const newSubject = prompt('새 과목명을 입력하세요:', current);
+                if (newSubject && newSubject.trim() !== '') {
+                    cell.textContent = newSubject.trim();
+                    cell.style.backgroundColor = getColorForSubject(newSubject.trim());
+                    saveTimetable();
+                }
+            } else {
+                
+                if (confirm(`"${current}" 과목을 정말 삭제하시겠습니까?`)) {
+                    cell.textContent = '';
+                    cell.style.backgroundColor = '';
+                    saveTimetable();
+                }
             }
         }
     });
