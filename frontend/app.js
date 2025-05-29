@@ -2,11 +2,20 @@ let calendar;
 let selectedShift = null;
 
 const SHIFTS_KEY = 'shifts';
+const EVENTS_KEY = 'events';
 
+// 근무 일정 저장
 async function saveShiftToStorage(start, end) {
   const existing = (await localforage.getItem(SHIFTS_KEY)) || [];
   existing.push({ start: start.toISOString(), end: end.toISOString() });
   await localforage.setItem(SHIFTS_KEY, existing);
+}
+
+// 일반 일정 저장 
+async function saveEventToStorage(title, start, end) {
+  const existing = (await localforage.getItem(EVENTS_KEY)) || [];
+  existing.push({ title, start: start.toISOString(), end: end.toISOString() });
+  await localforage.setItem(EVENTS_KEY, existing);
 }
 
 // 월급 계산기
@@ -40,6 +49,20 @@ async function loadShifts() {
   });
 }
 
+// 일반 일정 저장
+async function loadEvents() {
+  const data = (await localforage.getItem(EVENTS_KEY)) || [];
+  data.forEach(evt => {
+    calendar.addEvent({
+      title: evt.title,
+      start: evt.start,
+      end: evt.end,
+      backgroundColor: '#3788d8',
+      borderColor: '#3788d8'
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const calendarEl = document.getElementById('calendar-container');
   const wageInput = document.getElementById('hourly-wage');
@@ -57,8 +80,9 @@ document.addEventListener('DOMContentLoaded', function () {
     nowIndicator: true,
     editable: true,
     selectable: true,
-    select: function (info) {
-      // 근무,일반 일정 구분 선택
+    select: async function (info) {
+      selectedShift = info;
+      // 일정 유형 선택 (근무, 일반)
       const type = prompt("이벤트 유형을 선택하세요. 1: 근무, 2: 일반 일정");
       if (type !== '1' && type !== '2') return;
       const { start, end } = info;
@@ -67,11 +91,13 @@ document.addEventListener('DOMContentLoaded', function () {
       if (type === '1') {
         title = '근무';
         backgroundColor = '#4CAF50';
-        saveShiftToStorage(start, end);
+        await saveShiftToStorage(start, end);
         updateSalary();
       } else {
         title = prompt('일정 이름을 입력하세요:');
         if (!title) return;
+        backgroundColor = '#3788d8';
+        await saveEventToStorage(title, start, end);
       }
       calendar.addEvent({
         title,
@@ -80,15 +106,17 @@ document.addEventListener('DOMContentLoaded', function () {
         backgroundColor,
         borderColor: backgroundColor
       });
+      selectedShift = null;
     }
   });
   calendar.render();
 
-  // 시급 입력 시 계산
-  wageInput.addEventListener('input', updateSalary);
+  loadShifts();
+  loadEvents();
+  updateSalary();
 
-  // 기존 근무 일정 불러오기 및 급여 계산
-  loadShifts().then(updateSalary);
+  // 시급 입력 시 월급 계산
+  wageInput.addEventListener('input', updateSalary);
 
   // 일정 목록 보기
   showEventsBtn.addEventListener('click', async function () {
@@ -110,6 +138,10 @@ document.addEventListener('DOMContentLoaded', function () {
           const filtered = data.filter(s => s.start !== event.start.toISOString() || s.end !== event.end.toISOString());
           await localforage.setItem(SHIFTS_KEY, filtered);
           updateSalary();
+        } else {
+          const data = (await localforage.getItem(EVENTS_KEY)) || [];
+          const filtered = data.filter(e => e.title !== event.title || e.start !== event.start.toISOString() || e.end !== event.end.toISOString());
+          await localforage.setItem(EVENTS_KEY, filtered);
         }
         event.remove();
         li.remove();
