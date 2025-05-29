@@ -175,3 +175,35 @@ form button:hover {
   margin: 0;
   line-height: 1.4;
 }
+
+.top-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.toggle-list-container {
+  flex: 1;
+  max-width: 300px;
+}
+
+.event-list-container {
+  display: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-top: 0.5rem;
+  padding: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.btn-toggle {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+}

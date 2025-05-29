@@ -42,30 +42,35 @@
         <h1>나만의 캘린더</h1>
     </header>
 
+
     <main>
-        <!-- 시급 계산기 -->
-        <div class="calculator-container">
-            <!-- 시급 입력 -->
-            <div class="wage-input">
-                <label for="hourly-wage">시급 (원):</label>
-                <input type="number" id="hourly-wage" class="form-control" />
+        <!-- ↑ 기존 계산기, 버튼, 이벤트 리스트 위치 대신 이 구조로 교체 -->
+        <div class="top-controls">
+            <!-- 시급 계산기 -->
+            <div class="calculator-container">
+            <!-- 왼쪽: 시급 입력 -->
+                <div class="wage-input">
+                    <label for="hourly-wage">시급 (원):</label>
+                    <input type="number" id="hourly-wage" class="form-control" />
+                </div>
+                <!-- 오른쪽: 통계 -->
+                <div class="salary-stats">
+                    <p class="mb-1"><strong>총 근무 시간:</strong> <span id="total-time">0시간 0분</span></p>
+                    <p class="mb-0"><strong>예상 월급:</strong> <span id="total-salary">0원</span></p>
+                </div>
             </div>
-            <!-- 월급 계산 -->
-            <div class="salary-stats">
-                <p class="mb-1"><strong>총 근무 시간:</strong> <span id="total-time">0시간 0분</span></p>
-                <p class="mb-0"><strong>예상 월급:</strong> <span id="total-salary">0원</span></p>
+
+            <div class="toggle-list-container">
+                <button id="show-events-button" class="btn-toggle">일정 목록 보기</button>
+                <ul id="event-list" class="event-list-container"></ul>
             </div>
-            </div>
+        </div>
 
         <!-- 일정 관리 -->
         <section id="calendar">
-            <h2>일정 관리</h2>
             <div id="calendar-container"></div>
-            <div class="toggle-list-container">
-            <button id="show-events-button" class="btn-toggle">일정 목록 보기</button>
-            </div>
-            <ul id="event-list"></ul>
         </section>
+
         <!-- 시간표 -->
         <section id="timetable">
             <h2>시간표</h2>

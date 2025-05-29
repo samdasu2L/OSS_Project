@@ -124,41 +124,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 일정 목록 보기 기능 구현
   document.getElementById('show-events-button').addEventListener('click', function () {
-    const eventList = document.getElementById('event-list');
-    const displayStyle = window.getComputedStyle(eventList).display;
-     
-    if (displayStyle === 'none') {
-      
-      eventList.style.display = 'block';
-      
-      eventList.innerHTML = '';
+    const listEl = document.getElementById('event-list');
+    const isVisible = listEl.style.display === 'block';
+
+    if (isVisible) {
+      listEl.style.display = 'none';
+    } else {
+      listEl.innerHTML = '';
       const events = calendar.getEvents();
       if (events.length === 0) {
-        eventList.innerHTML = '<li>등록된 일정이 없습니다.</li>';
+        listEl.innerHTML = '<li>등록된 일정이 없습니다.</li>';
       } else {
         events.forEach(event => {
           const li = document.createElement('li');
           li.textContent = `${event.title} (${event.startStr})`;
-
-          const deleteBtn = document.createElement('button');
-          deleteBtn.textContent = '❌';
-          deleteBtn.style.marginLeft = '10px';
-          deleteBtn.addEventListener('click', function () {
-            
+          const del = document.createElement('button');
+          del.textContent = '❌';
+          del.style.marginLeft = '10px';
+          del.addEventListener('click', () => {
             event.remove();
-            
             li.remove();
-            // 근무 일정일 경우 급여 계산
             if (event.title === '근무') updateSalary();
           });
-
-          li.appendChild(deleteBtn);
-          eventList.appendChild(li);
+          li.appendChild(del);
+          listEl.appendChild(li);
         });
       }
-    } else {
-      
-      eventList.style.display = 'none';
+      listEl.style.display = 'block';
     }
   });
 });
