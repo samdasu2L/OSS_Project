@@ -1,156 +1,260 @@
 let calendar;
-
 const SHIFTS_KEY = 'shifts';
 const EVENTS_KEY = 'events';
 
-// 근무 일정 저장
-async function saveShiftToStorage(start, end) {
-  const existing = (await localforage.getItem(SHIFTS_KEY)) || [];
-  existing.push({ start: start.toISOString(), end: end.toISOString() });
-  await localforage.setItem(SHIFTS_KEY, existing);
+function generateId() {
+  return Date.now().toString() + Math.random().toString(36).substr(2, 5);
 }
 
-// 일반 일정 저장
-async function saveEventToStorage(title, start, end) {
-  const existing = (await localforage.getItem(EVENTS_KEY)) || [];
-  existing.push({ title, start: start.toISOString(), end: end.toISOString() });
-  await localforage.setItem(EVENTS_KEY, existing);
+// 근무 일정 등록
+async function saveShift(title, start, end) {
+  const list = (await localforage.getItem(SHIFTS_KEY)) || [];
+  const id = generateId();
+  list.push({ id, start: start.toISOString(), end: end.toISOString() });
+  await localforage.setItem(SHIFTS_KEY, list);
+  return id;
+}
+
+// 일반 일정 등록
+async function saveEvent(title, start, end) {
+  const list = (await localforage.getItem(EVENTS_KEY)) || [];
+  const id = generateId();
+  list.push({ id, title, start: start.toISOString(), end: end.toISOString() });
+  await localforage.setItem(EVENTS_KEY, list);
+  return id;
+}
+
+// 일반, 근무 일정 데이터 저장
+async function loadData() {
+  const shifts = (await localforage.getItem(SHIFTS_KEY)) || [];
+  shifts.forEach(s => {
+    calendar.addEvent({ id: s.id, title: '근무', start: s.start, end: s.end, backgroundColor: '#4caf50', borderColor: '#4caf50' });
+  });
+  const events = (await localforage.getItem(EVENTS_KEY)) || [];
+  events.forEach(e => {
+    calendar.addEvent({ id: e.id, title: e.title, start: e.start, end: e.end, backgroundColor: '#3788d8', borderColor: '#3788d8' });
+  });
 }
 
 // 월급 계산기
 async function updateSalary() {
   const wage = parseInt(document.getElementById('hourly-wage').value) || 0;
   const data = (await localforage.getItem(SHIFTS_KEY)) || [];
-
-  const currentDate = calendar.getDate();
-  const viewYear = currentDate.getFullYear();
-  const viewMonth = currentDate.getMonth();
-
-  // 월별 근무 계산
-  const monthlyShifts = data.filter(shift => {
-    const d = new Date(shift.start);
-    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-  });
-
+  const year = calendar.getDate().getFullYear();
+  const month = calendar.getDate().getMonth();
   let totalMinutes = 0;
-  monthlyShifts.forEach(shift => {
-    const start = new Date(shift.start);
-    const end = new Date(shift.end);
-    totalMinutes += (end - start) / (1000 * 60);
+  data.forEach(s => {
+    const st = new Date(s.start);
+    if (st.getFullYear() === year && st.getMonth() === month) {
+      totalMinutes += (new Date(s.end) - st) / 60000;
+    }
   });
-
   const hours = Math.floor(totalMinutes / 60);
   const mins = Math.round(totalMinutes % 60);
   const salary = Math.floor((totalMinutes / 60) * wage);
-
   document.getElementById('total-time').textContent = `${hours}시간 ${mins}분`;
   document.getElementById('total-salary').textContent = `${salary.toLocaleString()}원`;
 }
 
-// 근무 일정 저장
-async function loadShifts() {
-  const data = (await localforage.getItem(SHIFTS_KEY)) || [];
-  data.forEach(shift => {
-    calendar.addEvent({
-      title: '근무',
-      start: shift.start,
-      end: shift.end,
-      backgroundColor: '#4CAF50',
-      borderColor: '#4CAF50'
-    });
+// 버튼
+function setupToggle(btnId, listId, populateFn) {
+  const btn = document.getElementById(btnId);
+  const listEl = document.getElementById(listId);
+  btn.addEventListener('click', () => {
+    listEl.classList.toggle('is-open');
+    if (listEl.classList.contains('is-open')) populateFn();
   });
 }
 
-// 일반 일정 저장
-async function loadEvents() {
-  const data = (await localforage.getItem(EVENTS_KEY)) || [];
-  data.forEach(evt => {
-    calendar.addEvent({
-      title: evt.title,
-      start: evt.start,
-      end: evt.end,
-      backgroundColor: '#3788d8',
-      borderColor: '#3788d8'
+// 일반 일정 등록
+async function populateEventList() {
+  const listEl = document.getElementById('event-list');
+  listEl.innerHTML = '';
+  const events = (await localforage.getItem(EVENTS_KEY)) || [];
+  if (!events.length) {
+    listEl.innerHTML = '<li>등록된 일정이 없습니다.</li>';
+    return;
+  }
+  events.forEach(evt => {
+    const li = document.createElement('li');
+    const text = document.createElement('span');
+    const startTime = new Date(evt.start).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const endTime   = new Date(evt.end).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const diffMs    = new Date(evt.end) - new Date(evt.start);
+    const h         = Math.floor(diffMs/(1000*60*60));
+    const m         = Math.round((diffMs%(1000*60*60))/(1000*60));
+    const duration  = m===0 ? `${h}시간` : `${h}시간 ${m}분`;
+    text.textContent = `${evt.title}: ${startTime} ~ ${endTime} (${duration})`;
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '❌';
+    delBtn.addEventListener('click', async () => {
+      text.textContent = `${evt.title} (${new Date(evt.start).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })})`;
+      const updated = (await localforage.getItem(EVENTS_KEY)) || [];
+      await localforage.setItem(EVENTS_KEY, updated.filter(e => e.id !== evt.id));
+      populateEventList();
     });
+    li.append(text, delBtn);
+    listEl.append(li);
   });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const calendarEl = document.getElementById('calendar-container');
-  const wageInput = document.getElementById('hourly-wage');
-  const showEventsBtn = document.getElementById('show-events-button');
-  const eventListEl = document.getElementById('event-list');
-
-  // 캘린더 초기화
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    nowIndicator: true,
-    editable: true,
-    selectable: true,
-    datesSet: updateSalary,
-    select: async function (info) {
-      const type = prompt('이벤트 유형 선택: 1) 근무 2) 일반');
-      if (type !== '1' && type !== '2') return;
-      const { start, end } = info;
-      let title = '';
-      let bg = '';
-      if (type === '1') {
-        title = '근무';
-        bg = '#4CAF50';
-        await saveShiftToStorage(start, end);
-      } else {
-        title = prompt('일정 이름 입력:');
-        if (!title) return;
-        bg = '#3788d8';
-        await saveEventToStorage(title, start, end);
-      }
-      calendar.addEvent({ title, start, end, backgroundColor: bg, borderColor: bg });
+// 근무 일정 등록
+async function populateShiftList() {
+  const listEl = document.getElementById('shift-list');
+  listEl.innerHTML = '';
+  const shifts = (await localforage.getItem(SHIFTS_KEY)) || [];
+  if (!shifts.length) {
+    listEl.innerHTML = '<li>등록된 근무 일정이 없습니다.</li>';
+    return;
+  }
+  shifts.forEach(s => {
+    const li = document.createElement('li');
+    const text = document.createElement('span');
+    const startTime = new Date(s.start).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const endTime   = new Date(s.end).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const diffMs    = new Date(s.end) - new Date(s.start);
+    const h         = Math.floor(diffMs/(1000*60*60));
+    const m         = Math.round((diffMs%(1000*60*60))/(1000*60));
+    const duration  = m===0 ? `${h}시간` : `${h}시간 ${m}분`;
+    text.textContent = `근무: ${startTime} ~ ${endTime} (${duration})`;
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '❌';
+    delBtn.addEventListener('click', async () => {
+      calendar.getEventById(s.id)?.remove();
+      const updated = (await localforage.getItem(SHIFTS_KEY)) || [];
+      await localforage.setItem(SHIFTS_KEY, updated.filter(e => e.id !== s.id));
       updateSalary();
-    }
+      populateShiftList();
+    });
+    li.append(text, delBtn);
+    listEl.append(li);
   });
-  calendar.render();
+}
 
-  loadShifts();
-  loadEvents();
-  updateSalary();
-
-  // 시급 입력
-  wageInput.addEventListener('input', updateSalary);
-
-  // 일정 목록 보기 기능 구현
-  document.getElementById('show-events-button').addEventListener('click', function () {
-    const listEl = document.getElementById('event-list');
-    const isVisible = listEl.style.display === 'block';
-
-    if (isVisible) {
-      listEl.style.display = 'none';
-    } else {
-      listEl.innerHTML = '';
-      const events = calendar.getEvents();
-      if (events.length === 0) {
-        listEl.innerHTML = '<li>등록된 일정이 없습니다.</li>';
-      } else {
-        events.forEach(event => {
-          const li = document.createElement('li');
-          li.textContent = `${event.title} (${event.startStr})`;
-          const del = document.createElement('button');
-          del.textContent = '❌';
-          del.style.marginLeft = '10px';
-          del.addEventListener('click', () => {
-            event.remove();
-            li.remove();
-            if (event.title === '근무') updateSalary();
-          });
-          li.appendChild(del);
-          listEl.appendChild(li);
-        });
+//시간표
+document.addEventListener('DOMContentLoaded', async () => {
+  calendar = new FullCalendar.Calendar(
+    document.getElementById('calendar-container'),
+    {
+      initialView: 'dayGridMonth',
+      headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
+      nowIndicator: true,
+      editable: true,
+      selectable: true,
+      datesSet: updateSalary,
+      select: async info => {
+        const choice = prompt('이벤트 유형: 1) 근무 2) 일반');
+        if (choice !== '1' && choice !== '2') return;
+        const { start, end } = info;
+        if (choice === '1') {
+          const id = await saveShift('근무', start, end);
+          calendar.addEvent({ id, title:'근무', start, end, backgroundColor:'#4caf50', borderColor:'#4caf50' });
+        } else {
+          const title = prompt('일정 이름 입력:');
+          if (!title) return;
+          const id = await saveEvent(title, start, end);
+          calendar.addEvent({ id, title, start, end, backgroundColor:'#3788d8', borderColor:'#3788d8' });
+        }
+        updateSalary();
       }
-      listEl.style.display = 'block';
     }
-  });
+  );
+  calendar.render();
+  await loadData();
+  updateSalary();
+  document.getElementById('hourly-wage').addEventListener('input', updateSalary);
+  setupToggle('show-events-button', 'event-list', populateEventList);
+  setupToggle('show-shifts-button', 'shift-list', populateShiftList);
 });
+
+const STORAGE_KEY = 'timetableData';
+const COLOR_PALETTE = ['#FFB6C1', '#FFDEAD', '#ADD8E6', '#90EE90', '#DDA0DD', '#FFFACD', '#E6E6FA'];
+
+
+document.querySelectorAll('#timetable td').forEach((cell, index) => {
+    cell.setAttribute('data-cell-id', index);
+});
+
+const subjectColorMap = new Map();
+const usedColors = new Set();
+
+function getColorForSubject(subject) {
+    if (subjectColorMap.has(subject)) {
+        return subjectColorMap.get(subject);
+    }
+
+    let availableColors = COLOR_PALETTE.filter(color => !usedColors.has(color));
+    if (availableColors.length === 0) {
+        availableColors = [...COLOR_PALETTE];
+    }
+
+    const selected = availableColors[Math.floor(Math.random() * availableColors.length)];
+    subjectColorMap.set(subject, selected);
+    usedColors.add(selected);
+
+    return selected;
+}
+
+function saveTimetable() {
+    const data = {};
+    document.querySelectorAll('#timetable td').forEach(cell => {
+        const id = cell.getAttribute('data-cell-id');
+        const value = cell.textContent.trim();
+        data[id] = value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadTimetable() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        const data = JSON.parse(saved);
+        document.querySelectorAll('#timetable td').forEach(cell => {
+            const id = cell.getAttribute('data-cell-id');
+            const subject = data[id];
+            if (subject) {
+            if (subject && cell.cellIndex !== 0) {
+                cell.textContent = subject;
+                cell.style.backgroundColor = getColorForSubject(subject);
+            } else if (subject) {
+                cell.textContent = subject;
+            }
+          }});
+    }
+}
+
+document.querySelectorAll('#timetable td').forEach(cell => {
+    
+    if (cell.cellIndex === 0) return;
+
+    cell.addEventListener('click', function () {
+        const current = cell.textContent.trim();
+        const id = cell.getAttribute('data-cell-id');
+
+        if (current === '') {
+            const subject = prompt('과목명을 입력하세요:');
+            if (subject !== null && subject.trim() !== '') {
+                cell.textContent = subject;
+                cell.style.backgroundColor = getColorForSubject(subject);
+                saveTimetable();
+            }
+        } else {
+            const action = prompt(`현재 과목: "${current}"\n수정하려면 새 과목명을 입력하고,\n삭제하려면 "삭제"라고 입력하세요:`);
+
+            if (action === null) return;
+
+            if (action.trim() === '삭제') {
+                cell.textContent = '';
+                cell.style.backgroundColor = '';
+                saveTimetable();
+            } else if (action.trim() !== '') {
+                const newSubject = action.trim();
+                cell.textContent = newSubject;
+                cell.style.backgroundColor = getColorForSubject(newSubject);
+                saveTimetable();
+            }
+        }
+    });
+});
+
+loadTimetable();
