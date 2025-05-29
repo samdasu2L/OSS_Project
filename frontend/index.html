@@ -15,6 +15,7 @@
   </header>
 
   <main>
+    <!-- 계산기 -->
     <div class="top-controls">
       <div class="calculator-container">
         <div class="wage-input">
@@ -26,19 +27,22 @@
           <p><strong>예상 월급:</strong> <span id="total-salary">0원</span></p>
         </div>
       </div>
-
-      <div class="toggle-list-container">
-        <button id="show-shifts-button" class="btn-toggle">근무 목록 보기</button>
-        <ul id="shift-list" class="event-list-container"></ul>
-      </div>
-
-      <div class="toggle-list-container">
-        <button id="show-events-button" class="btn-toggle">일정 목록 보기</button>
-        <ul id="event-list" class="event-list-container"></ul>
-      </div>
     </div>
 
-    <div id="calendar-container"></div>
+    <div class="content-area">
+      <!-- 캘린더 -->
+      <div id="calendar-container"></div>
+      <div class="lists-container">
+        <div class="toggle-list-container">
+          <button id="show-shifts-button" class="btn-toggle">목록 보기</button>
+          <ul id="shift-list" class="event-list-container"></ul>
+        </div>
+        <div class="toggle-list-container">
+          <button id="show-events-button" class="btn-toggle">목록 보기</button>
+          <ul id="event-list" class="event-list-container"></ul>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>

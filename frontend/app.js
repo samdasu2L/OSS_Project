@@ -6,7 +6,7 @@ function generateId() {
   return Date.now().toString() + Math.random().toString(36).substr(2, 5);
 }
 
-// 근무 일정 저장
+// 근무 일정 등록
 async function saveShift(title, start, end) {
   const list = (await localforage.getItem(SHIFTS_KEY)) || [];
   const id = generateId();
@@ -15,7 +15,7 @@ async function saveShift(title, start, end) {
   return id;
 }
 
-// 일반 일정 저장
+// 일반 일정 등록
 async function saveEvent(title, start, end) {
   const list = (await localforage.getItem(EVENTS_KEY)) || [];
   const id = generateId();
@@ -24,7 +24,7 @@ async function saveEvent(title, start, end) {
   return id;
 }
 
-// 일반 + 근무 일정 데이터 저장
+// 일반, 근무 일정 데이터 저장
 async function loadData() {
   const shifts = (await localforage.getItem(SHIFTS_KEY)) || [];
   shifts.forEach(s => {
@@ -66,7 +66,7 @@ function setupToggle(btnId, listId, populateFn) {
   });
 }
 
-// 일반 일정 목록
+// 일반 일정 등록
 async function populateEventList() {
   const listEl = document.getElementById('event-list');
   listEl.innerHTML = '';
@@ -78,7 +78,13 @@ async function populateEventList() {
   events.forEach(evt => {
     const li = document.createElement('li');
     const text = document.createElement('span');
-    text.textContent = `${evt.title}: ${new Date(evt.start).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ~ ${new Date(evt.end).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}`;
+    const startTime = new Date(evt.start).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const endTime   = new Date(evt.end).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const diffMs    = new Date(evt.end) - new Date(evt.start);
+    const h         = Math.floor(diffMs/(1000*60*60));
+    const m         = Math.round((diffMs%(1000*60*60))/(1000*60));
+    const duration  = m===0 ? `${h}시간` : `${h}시간 ${m}분`;
+    text.textContent = `${evt.title}: ${startTime} ~ ${endTime} (${duration})`;
     const delBtn = document.createElement('button');
     delBtn.textContent = '❌';
     delBtn.addEventListener('click', async () => {
@@ -92,7 +98,7 @@ async function populateEventList() {
   });
 }
 
-// 근무 일정 목록
+// 근무 일정 등록
 async function populateShiftList() {
   const listEl = document.getElementById('shift-list');
   listEl.innerHTML = '';
@@ -104,7 +110,13 @@ async function populateShiftList() {
   shifts.forEach(s => {
     const li = document.createElement('li');
     const text = document.createElement('span');
-    text.textContent = `근무: ${new Date(s.start).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~ ${new Date(s.end).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`;
+    const startTime = new Date(s.start).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const endTime   = new Date(s.end).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const diffMs    = new Date(s.end) - new Date(s.start);
+    const h         = Math.floor(diffMs/(1000*60*60));
+    const m         = Math.round((diffMs%(1000*60*60))/(1000*60));
+    const duration  = m===0 ? `${h}시간` : `${h}시간 ${m}분`;
+    text.textContent = `근무: ${startTime} ~ ${endTime} (${duration})`;
     const delBtn = document.createElement('button');
     delBtn.textContent = '❌';
     delBtn.addEventListener('click', async () => {
