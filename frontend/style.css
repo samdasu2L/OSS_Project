@@ -35,6 +35,34 @@ h2 {
 #event-list {
     margin-top: 1rem;
     padding-left: 1.5rem;
+
+    display: none;
+}
+
+/* 일정 목록 보기 버튼 */
+.toggle-list-container {
+  background: #fff;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.btn-toggle {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-toggle:hover {
+  background-color: #45a049;
 }
 
 #event-list li {
